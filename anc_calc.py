@@ -303,10 +303,12 @@ def process_batch(input_csv: str, output_csv: str) -> int:
 
     for r in rows:
         try:
-            wbc = float(r.get("wbc", 0))
-            segs = float(r["segs_percent"]) if r.get("segs_percent") else None
-            bands = float(r["bands_percent"]) if r.get("bands_percent") else None
-            neutrophils = float(r["neutrophils_percent"]) if r.get("neutrophils_percent") else None
+            # Check standard or fallback columns
+            wbc_raw = r.get("wbc") or r.get("v1") or "0"
+            wbc = float(wbc_raw)
+            segs = float(r["segs_percent"]) if r.get("segs_percent") else (float(r["v2"]) if "v2" in r and "v3" in r else None)
+            bands = float(r["bands_percent"]) if r.get("bands_percent") else (float(r["v3"]) if "v3" in r and "v2" in r else None)
+            neutrophils = float(r["neutrophils_percent"]) if r.get("neutrophils_percent") else (float(r["v2"]) if "v2" in r and "v3" not in r else None)
             lymphocytes = float(r["lymphocytes_percent"]) if r.get("lymphocytes_percent") else None
             temp = float(r["temperature_celsius"]) if r.get("temperature_celsius") else None
             sustained = r.get("sustained_fever", "").lower() in ("true", "1", "yes")
